@@ -1,97 +1,113 @@
 package main
 
-// import (
-// 	"fmt"
-// 	"log"
-// 	"time"
-// )
+import (
+	"fmt"
+	"math/rand"
+	"time"
 
-// const totalLicenses = 5
+	log "github.com/sirupsen/logrus"
+)
 
-// var usedLicenses = 0
+// Total number of licenses. It should be constant for the whole program.
+const totalLicenses = 6
 
-// type ConnectionMaker interface {
-// 	connect()
-// }
+// usedLicenses is a global variable that counts the number of connections that are in use.
+var usedLicenses = 0
 
-// type User struct {
-// 	name string
-// }
+// ConnectionMaker is an interface that defines the connect method.
+type ConnectionMaker interface {
+	connect()
+}
 
-// type Connection struct {
-// 	user User
-// }
+// User is a struct that holds the name of the user.
+type User struct {
+	name string
+}
 
-// func (c Connection) connect() {
-// 	fmt.Printf("\n%s connecting!\n", c.user.name)
-// }
+// Connection is a struct that holds the user.
+type Connection struct {
+	user User
+}
 
-// type ProxyConnectionMaker struct {
-// 	connectionMaker ConnectionMaker
-// 	user            User
-// }
+// connect method of Connection struct that prints the connected user name.
+func (c Connection) connect() {
+	log.Infof("Welcome aboard %s ! You are connected!", c.user.name)
+}
 
-// func (p *ProxyConnectionMaker) connect() {
-// 	if usedLicenses < totalLicenses {
-// 		usedLicenses++
-// 		p.connectionMaker.connect()
-// 	} else {
-// 		log.Println("\nToo many users, please try again later.")
-// 	}
-// }
+// ProxyConnectionMaker is a struct that holds the connection maker and the user.
+type ProxyConnectionMaker struct {
+	connectionMaker ConnectionMaker
+	user            User
+}
 
-// func main() {
+// connect method of ProxyConnectionMaker struct that checks the number of licenses and prints the connected user name.
+func (p *ProxyConnectionMaker) connect() {
+	if usedLicenses < totalLicenses {
+		usedLicenses++
+		p.connectionMaker.connect()
+	} else {
+		log.Warnf("All connections are in use at the moment, please try again later dear %s.", p.user.name)
+	}
+}
 
-// 	time.AfterFunc(1*time.Second, func() { usedLicenses = 0 })
+func main() {
 
-// 	user1 := User{name: "Tohan"}
-// 	user2 := User{name: "Cemhan"}
-// 	user3 := User{name: "Gökçe"}
-// 	user4 := User{name: "Batu"}
-// 	user5 := User{name: "Ezgi"}
-// 	user6 := User{name: "Emrehan"}
-// 	user7 := User{name: "Özüm"}
+	log.Info("Hello. This is a sample program using proxy design pattern.")
+	log.Warn("If you want to exit the program, please press Ctrl+C.")
 
-// 	connectionMaker := &[]ProxyConnectionMaker{
-// 		{&Connection{user1}, user1},
-// 		{&Connection{user2}, user2},
-// 		{&Connection{user3}, user3},
-// 		{&Connection{user4}, user4},
-// 		{&Connection{user5}, user5},
-// 		{&Connection{user6}, user6},
-// 		{&Connection{user7}, user7},
-// 	}
+	for {
+		// After some time, usedLicenses will be reset to 0.
+		time.AfterFunc(3*time.Second, func() {
+			// Reset the usedLicenses with a random number between 0 and totalLicenses
+			rand.Seed(time.Now().UnixNano())
+			usedLicenses = rand.Intn(totalLicenses)
+		})
 
-// 	for _, connectionMaker := range *connectionMaker {
-// 		connectionMaker.connect()
-// 	}
+		// connect concurrently
+		connectConcurrently()
 
-// 	connectionMaker2 := &[]ProxyConnectionMaker{
-// 		{&Connection{user1}, user1},
-// 		{&Connection{user2}, user2},
-// 		{&Connection{user3}, user3},
-// 		{&Connection{user4}, user4},
-// 		{&Connection{user5}, user5},
-// 	}
+		// Next line for better visualization.
+		fmt.Println("\n ")
 
-// 	for _, connectionMaker := range *connectionMaker2 {
-// 		connectionMaker.connect()
-// 	}
+		// Sleep for a while to reset usedLicenses.
+		time.Sleep(5 * time.Second)
+	}
 
-// 	time.Sleep(2 * time.Second)
+}
 
-// 	connectionMaker3 := &[]ProxyConnectionMaker{
-// 		{&Connection{user1}, user1},
-// 		{&Connection{user2}, user2},
-// 		{&Connection{user3}, user3},
-// 		{&Connection{user4}, user4},
-// 		{&Connection{user5}, user5},
-// 		{&Connection{user6}, user6},
-// 		{&Connection{user7}, user7},
-// 	}
+func connectConcurrently() {
+	// Initialize the users.
+	user1 := User{name: "User1"}
+	user2 := User{name: "User2"}
+	user3 := User{name: "User3"}
+	user4 := User{name: "User4"}
+	user5 := User{name: "User5"}
+	user6 := User{name: "User6"}
 
-// 	for _, connectionMaker := range *connectionMaker3 {
-// 		connectionMaker.connect()
-// 	}
+	// Go routines to connect the users.
 
-// }
+	go func() {
+		connectionMaker := &ProxyConnectionMaker{&Connection{user: user1}, user1}
+		connectionMaker.connect()
+	}()
+	go func() {
+		connectionMaker := &ProxyConnectionMaker{&Connection{user: user2}, user2}
+		connectionMaker.connect()
+	}()
+	go func() {
+		connectionMaker := &ProxyConnectionMaker{&Connection{user: user3}, user3}
+		connectionMaker.connect()
+	}()
+	go func() {
+		connectionMaker := &ProxyConnectionMaker{&Connection{user: user4}, user4}
+		connectionMaker.connect()
+	}()
+	go func() {
+		connectionMaker := &ProxyConnectionMaker{&Connection{user: user5}, user5}
+		connectionMaker.connect()
+	}()
+	go func() {
+		connectionMaker := &ProxyConnectionMaker{&Connection{user: user6}, user6}
+		connectionMaker.connect()
+	}()
+}
