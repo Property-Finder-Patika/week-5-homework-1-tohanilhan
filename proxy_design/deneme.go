@@ -58,7 +58,7 @@ func main() {
 	for {
 		// After some time, usedLicenses will be reset to 0.
 		time.AfterFunc(3*time.Second, func() {
-			// Reset the usedLicenses with a random number between 0 and totalLicenses.
+			// Reset the usedLicenses with a random number between 0 and totalLicenses
 			rand.Seed(time.Now().UnixNano())
 			usedLicenses = rand.Intn(totalLicenses)
 		})
